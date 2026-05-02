@@ -18,8 +18,10 @@ class HistoryDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final result = MedicationAnalysisResult.fromJson(item.resultJson);
     final strings = context.strings;
+    final languageKey = context.localeService.language.name;
 
     return Scaffold(
+      key: ValueKey('history-detail-$languageKey'),
       appBar: AppBar(
         title: Text(strings.t('analysisDetail')),
         actions: const [
@@ -35,7 +37,10 @@ class HistoryDetailPage extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1040),
-              child: AnalysisResultView(result: result),
+              child: AnalysisResultView(
+                key: ValueKey('history-result-$languageKey'),
+                result: result,
+              ),
             ),
           ),
         ),

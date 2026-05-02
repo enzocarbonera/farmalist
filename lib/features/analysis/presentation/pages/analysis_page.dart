@@ -159,10 +159,12 @@ class _AnalysisPageState extends State<AnalysisPage> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
     final loadingMessages = _loadingMessages(context);
+    final languageKey = context.localeService.language.name;
 
     return Scaffold(
+      key: ValueKey('analysis-page-$languageKey'),
       appBar: AppBar(
         title: Text(strings.t('analysisTitle')),
         actions: const [
@@ -515,7 +517,7 @@ class _ResponseSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
 
     if (response.status == 'no_source_for_country') {
       return _SelectionCard(
@@ -612,7 +614,10 @@ class _ResponseSection extends StatelessWidget {
     }
 
     if (response.isSuccess && response.result != null) {
-      return AnalysisResultView(result: response.result!);
+      return AnalysisResultView(
+        key: ValueKey('analysis-result-${context.localeService.language.name}'),
+        result: response.result!,
+      );
     }
 
     return _SectionCard(

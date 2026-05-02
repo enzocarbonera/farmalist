@@ -24,7 +24,7 @@ class AnalysisResultView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
     final visualType = _classifyMedicationType(result);
 
     return Column(
@@ -220,7 +220,7 @@ class _DoseResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
 
     if (result.doseCalculated) {
       return _SectionCard(
@@ -475,7 +475,7 @@ class _ConfidenceBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
     final normalized = confidence.toLowerCase().trim();
     late final String label;
     late final Color background;
@@ -531,7 +531,7 @@ class _OfficialSourceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
 
     return _SectionCard(
       title: strings.t('officialSource'),
@@ -587,7 +587,7 @@ class _ClinicalSourcesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
 
     return _SectionCard(
       title: strings.t('aiClinicalSources'),
@@ -679,7 +679,7 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.strings;
+    final strings = AppStrings.current;
     final label = switch (type) {
       MedicationVisualType.tablet => strings.t('pillCapsule'),
       MedicationVisualType.liquid => strings.t('liquidDrops'),
