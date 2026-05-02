@@ -1,11 +1,11 @@
 {
-    "name": "FarmaDose",
-    "short_name": "FarmaDose",
+    "name": "FarmaList",
+    "short_name": "FarmaList",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "FarmaDose",
+    "description": "FarmaList",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
