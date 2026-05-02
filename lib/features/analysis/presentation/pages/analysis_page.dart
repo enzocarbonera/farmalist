@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -55,18 +55,74 @@ class _AnalysisPageState extends State<AnalysisPage> {
   List<_SelectOption> _countryOptions(BuildContext context) {
     final strings = context.strings;
     return [
-      _SelectOption(value: 'Brasil', label: strings.t('countryBrazil')),
-      _SelectOption(value: 'México', label: strings.t('countryMexico')),
-      _SelectOption(value: 'Argentina', label: strings.t('countryArgentina')),
-      _SelectOption(value: 'Colombia', label: strings.t('countryColombia')),
-      _SelectOption(value: 'Chile', label: strings.t('countryChile')),
-      _SelectOption(value: 'Perú', label: strings.t('countryPeru')),
       _SelectOption(
-        value: 'Estados Unidos',
+        value: strings.t('countryBrazil'),
+        label: strings.t('countryBrazil'),
+      ),
+      _SelectOption(
+        value: strings.t('countryArgentina'),
+        label: strings.t('countryArgentina'),
+      ),
+      _SelectOption(
+        value: strings.t('countryColombia'),
+        label: strings.t('countryColombia'),
+      ),
+      _SelectOption(
+        value: strings.t('countryChile'),
+        label: strings.t('countryChile'),
+      ),
+      _SelectOption(
+        value: strings.t('countryPeru'),
+        label: strings.t('countryPeru'),
+      ),
+      _SelectOption(
+        value: strings.t('countryBolivia'),
+        label: strings.t('countryBolivia'),
+      ),
+      _SelectOption(
+        value: strings.t('countryParaguay'),
+        label: strings.t('countryParaguay'),
+      ),
+      _SelectOption(
+        value: strings.t('countryUruguay'),
+        label: strings.t('countryUruguay'),
+      ),
+      _SelectOption(
+        value: strings.t('countryEcuador'),
+        label: strings.t('countryEcuador'),
+      ),
+      _SelectOption(
+        value: strings.t('countryVenezuela'),
+        label: strings.t('countryVenezuela'),
+      ),
+      _SelectOption(
+        value: strings.t('countryGuyana'),
+        label: strings.t('countryGuyana'),
+      ),
+      _SelectOption(
+        value: strings.t('countrySuriname'),
+        label: strings.t('countrySuriname'),
+      ),
+      _SelectOption(
+        value: strings.t('countryFrenchGuiana'),
+        label: strings.t('countryFrenchGuiana'),
+      ),
+      _SelectOption(
+        value: strings.t('countryMexico'),
+        label: strings.t('countryMexico'),
+      ),
+      _SelectOption(
+        value: strings.t('countryUnitedStates'),
         label: strings.t('countryUnitedStates'),
       ),
-      _SelectOption(value: 'Europa', label: strings.t('countryEurope')),
-      _SelectOption(value: 'Otro', label: strings.t('countryOther')),
+      _SelectOption(
+        value: strings.t('countryEurope'),
+        label: strings.t('countryEurope'),
+      ),
+      _SelectOption(
+        value: strings.t('countrySpain'),
+        label: strings.t('countrySpain'),
+      ),
     ];
   }
 
@@ -778,3 +834,6 @@ class _SectionCard extends StatelessWidget {
     );
   }
 }
+
+
+
