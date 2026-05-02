@@ -16,5 +16,5 @@ Future<void> main() async {
     anonKey: AppConfig.supabaseAnonKey,
   );
 
-  runApp(const FarmaDoseApp());
+  runApp(const FarmaListApp());
 }

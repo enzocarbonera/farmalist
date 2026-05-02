@@ -1,4 +1,4 @@
-# FarmaDose
+# FarmaList
 
 A new Flutter project.
 

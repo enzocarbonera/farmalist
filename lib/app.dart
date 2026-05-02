@@ -11,8 +11,8 @@ import 'features/home/presentation/pages/home_page.dart';
 import 'features/sales/presentation/pages/landing_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
 
-class FarmaDoseApp extends StatelessWidget {
-  const FarmaDoseApp({super.key});
+class FarmaListApp extends StatelessWidget {
+  const FarmaListApp({super.key});
 
   @override
   Widget build(BuildContext context) {

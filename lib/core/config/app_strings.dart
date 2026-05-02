@@ -13,7 +13,7 @@ class AppStrings {
 
   static const Map<AppLanguage, Map<String, String>> _values = {
     AppLanguage.spanish: {
-      'appName': 'FarmaDose',
+      'appName': 'FarmaList',
       'language': 'Idioma',
       'spanishLatam': 'Español LATAM',
       'portugueseBrazil': 'Português Brasil',
@@ -21,7 +21,7 @@ class AppStrings {
       'close': 'Cerrar',
       'save': 'Guardar',
       'landingBadge': 'Suscripción médica para LATAM',
-      'landingHeadline': 'FarmaDose',
+      'landingHeadline': 'FarmaList',
       'landingSubtitle':
           'Calcula, analiza y verifica dosis de medicamentos con apoyo de IA, fuentes oficiales y explicación detallada.',
       'startNow': 'Comenzar ahora',
@@ -59,7 +59,7 @@ class AppStrings {
       'annualPriceLabel': '\$57 USD / año',
       'legalNotice':
           'Esta herramienta tiene fines educativos y de apoyo. No reemplaza la evaluación de un profesional de la salud. Verifica siempre la información con fuentes oficiales.',
-      'loginWelcome': 'Bienvenido a FarmaDose',
+      'loginWelcome': 'Bienvenido a FarmaList',
       'loginSubtitle':
           'Accede a tu cuenta para analizar medicamentos con apoyo de IA, fuentes oficiales y cálculos detallados.',
       'email': 'Correo electrónico',
@@ -84,7 +84,7 @@ class AppStrings {
       'seePlans': 'Ver planes',
       'registerTitle': 'Crear cuenta',
       'registerSubtitle':
-          'Registra a un profesional para acceder al flujo de análisis de medicamentos de FarmaDose.',
+          'Registra a un profesional para acceder al flujo de análisis de medicamentos de FarmaList.',
       'confirmPassword': 'Confirmar contraseña',
       'passwordsDoNotMatch': 'Las contraseñas no coinciden.',
       'createAccountSuccess': 'Cuenta creada correctamente.',
@@ -245,7 +245,7 @@ class AppStrings {
           'Accede a tu cuenta para analizar medicamentos con apoyo de IA, fuentes oficiales y cálculos detallados.',
     },
     AppLanguage.portugueseBrazil: {
-      'appName': 'FarmaDose',
+      'appName': 'FarmaList',
       'language': 'Idioma',
       'spanishLatam': 'Español LATAM',
       'portugueseBrazil': 'Português Brasil',
@@ -253,7 +253,7 @@ class AppStrings {
       'close': 'Fechar',
       'save': 'Salvar',
       'landingBadge': 'Assinatura médica para LATAM',
-      'landingHeadline': 'FarmaDose',
+      'landingHeadline': 'FarmaList',
       'landingSubtitle':
           'Calcula, analisa e verifica doses de medicamentos com apoio de IA, fontes oficiais e explicação detalhada.',
       'startNow': 'Começar agora',
@@ -291,7 +291,7 @@ class AppStrings {
       'annualPriceLabel': '\$57 USD / ano',
       'legalNotice':
           'Esta ferramenta tem fins educacionais e de apoio. Não substitui a avaliação de um profissional de saúde. Sempre verifique as informações em fontes oficiais.',
-      'loginWelcome': 'Bem-vindo ao FarmaDose',
+      'loginWelcome': 'Bem-vindo ao FarmaList',
       'loginSubtitle':
           'Acesse sua conta para analisar medicamentos com apoio de IA, fontes oficiais e cálculos detalhados.',
       'email': 'E-mail',
@@ -316,7 +316,7 @@ class AppStrings {
       'seePlans': 'Ver planos',
       'registerTitle': 'Criar conta',
       'registerSubtitle':
-          'Cadastre um profissional para acessar o fluxo de análise de medicamentos do FarmaDose.',
+          'Cadastre um profissional para acessar o fluxo de análise de medicamentos do FarmaList.',
       'confirmPassword': 'Confirmar senha',
       'passwordsDoNotMatch': 'As senhas não coincidem.',
       'createAccountSuccess': 'Conta criada corretamente.',
