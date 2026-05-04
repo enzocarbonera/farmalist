@@ -56,6 +56,7 @@ class AnalysisResultView extends StatelessWidget {
             ],
           ),
         ),
+        _DoseResultCard(result: result),
         if (result.therapeuticClass.isNotEmpty ||
             result.indicationSummary.isNotEmpty ||
             result.commonSymptomsOrSituations.isNotEmpty ||
@@ -109,10 +110,9 @@ class AnalysisResultView extends StatelessWidget {
                         ?.copyWith(height: 1.6),
                   ),
                 ],
-              ],
+                ],
+              ),
             ),
-          ),
-        _DoseResultCard(result: result),
         _SectionCard(
           title: strings.t('stepByStepCalculation'),
           icon: Icons.calculate_rounded,
