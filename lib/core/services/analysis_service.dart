@@ -238,6 +238,9 @@ class MedicationAnalysisResult {
     required this.officialSource,
     required this.clinicalSources,
     required this.disclaimer,
+    required this.sourceOrigin,
+    required this.fallbackMessage,
+    required this.clinicalStructure,
   });
 
   final String medication;
@@ -263,12 +266,35 @@ class MedicationAnalysisResult {
   final OfficialSource officialSource;
   final List<ClinicalSource> clinicalSources;
   final String disclaimer;
+  final String sourceOrigin;
+  final String fallbackMessage;
+  final ClinicalStructure clinicalStructure;
+
+  bool get hasWhoPahoSource => const {
+        'who_paho',
+        'who_paho_fallback',
+        'who_paho_fallback_insufficient',
+      }.contains(sourceOrigin.trim().toLowerCase());
+
+  String get resolvedPosology => clinicalStructure.posology;
+
+  String get resolvedFrequency =>
+      frequency.isNotEmpty ? frequency : clinicalStructure.frequency;
+
+  String get resolvedDuration =>
+      duration.isNotEmpty ? duration : clinicalStructure.duration;
+
+  double? get resolvedMaxDailyDoseMg => maxDailyDoseMg ?? clinicalStructure.maxDailyDoseMg;
+
+  List<String> get resolvedAlerts =>
+      alerts.isNotEmpty ? _mergeStringLists(alerts, clinicalStructure.warnings) : clinicalStructure.warnings;
 
   factory MedicationAnalysisResult.fromJson(Map<String, dynamic> json) {
     final officialSource = OfficialSource.fromDynamic(
       json['source'] ?? json['official_source'],
     );
     final estimatedDetails = EstimatedDetails.fromDynamic(json['estimated_details']);
+    final clinicalStructure = ClinicalStructure.fromDynamic(json['clinical_structure']);
 
     return MedicationAnalysisResult(
       medication: (json['medication'] ??
@@ -285,9 +311,11 @@ class MedicationAnalysisResult {
       ),
       doseCalculated: json['dose_calculated'] == true,
       doseMg: _parseDouble(json['dose_mg']),
-      frequency: (json['frequency'] ?? '').toString(),
-      duration: (json['duration'] ?? '').toString(),
-      maxDailyDoseMg: _parseDouble(json['max_daily_dose_mg']),
+      frequency: (json['frequency'] ?? clinicalStructure.frequency).toString(),
+      duration: (json['duration'] ?? clinicalStructure.duration).toString(),
+      maxDailyDoseMg: _parseDouble(
+        json['max_daily_dose_mg'] ?? clinicalStructure.maxDailyDoseMg,
+      ),
       estimatedDoseMg: _parseDouble(json['estimated_dose_mg']),
       estimatedAvailable: json['estimated_available'] == true,
       estimatedConfidence: (json['estimated_confidence'] ?? '').toString(),
@@ -297,7 +325,10 @@ class MedicationAnalysisResult {
       calculationSteps: _parseStringList(
         json['calculation_steps'] ?? json['steps'] ?? json['step_by_step'],
       ),
-      alerts: _parseStringList(json['alerts'] ?? json['warnings'] ?? json['risks']),
+      alerts: _mergeStringLists(
+        _parseStringList(json['alerts'] ?? json['warnings'] ?? json['risks']),
+        clinicalStructure.warnings,
+      ),
       explanation: (json['explanation'] ??
               json['detailed_explanation'] ??
               json['analysis'] ??
@@ -312,6 +343,9 @@ class MedicationAnalysisResult {
               json['notice'] ??
               AppStrings.current.t('legalNotice'))
           .toString(),
+      sourceOrigin: (json['source_origin'] ?? '').toString(),
+      fallbackMessage: (json['fallback_message'] ?? '').toString(),
+      clinicalStructure: clinicalStructure,
     );
   }
 
@@ -341,6 +375,91 @@ class MedicationAnalysisResult {
     }
 
     return null;
+  }
+
+  static List<String> _mergeStringLists(List<String> primary, List<String> secondary) {
+    final values = <String>[];
+    final seen = <String>{};
+
+    for (final item in [...primary, ...secondary]) {
+      final normalized = item.trim();
+      if (normalized.isEmpty) {
+        continue;
+      }
+      final key = normalized.toLowerCase();
+      if (seen.add(key)) {
+        values.add(normalized);
+      }
+    }
+
+    return values;
+  }
+}
+
+class ClinicalStructure {
+  const ClinicalStructure({
+    required this.posology,
+    required this.frequency,
+    required this.duration,
+    required this.maxDailyDoseMg,
+    required this.warnings,
+  });
+
+  final String posology;
+  final String frequency;
+  final String duration;
+  final double? maxDailyDoseMg;
+  final List<String> warnings;
+
+  factory ClinicalStructure.fromDynamic(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return ClinicalStructure(
+        posology: (value['posology'] ?? '').toString(),
+        frequency: (value['frequency'] ?? '').toString(),
+        duration: (value['duration'] ?? '').toString(),
+        maxDailyDoseMg: _parseDouble(value['max_daily_dose_mg']),
+        warnings: _parseStringList(value['warnings']),
+      );
+    }
+
+    return const ClinicalStructure(
+      posology: '',
+      frequency: '',
+      duration: '',
+      maxDailyDoseMg: null,
+      warnings: [],
+    );
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    if (value is String) {
+      return double.tryParse(value.replaceAll(',', '.'));
+    }
+
+    return null;
+  }
+
+  static List<String> _parseStringList(dynamic value) {
+    if (value is List) {
+      return value
+          .map((item) => item.toString())
+          .where((item) => item.trim().isNotEmpty)
+          .toList();
+    }
+
+    if (value is String && value.trim().isNotEmpty) {
+      return value
+          .split('\\n')
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList();
+    }
+
+    return const [];
   }
 }
 

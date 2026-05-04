@@ -30,6 +30,8 @@ class AnalysisResultView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (result.fallbackMessage.trim().isNotEmpty)
+          _FallbackMessageCard(message: result.fallbackMessage.trim()),
         _SectionCard(
           title: strings.t('analysisSummary'),
           icon: _iconForType(visualType),
@@ -131,11 +133,14 @@ class AnalysisResultView extends StatelessWidget {
           title: strings.t('importantWarnings'),
           icon: Icons.warning_amber_rounded,
           child: _BulletedList(
-            items: result.alerts,
+            items: result.resolvedAlerts,
             emptyLabel: strings.t('warningsNotReceived'),
           ),
         ),
-        _OfficialSourceCard(source: result.officialSource),
+        _OfficialSourceCard(
+          source: result.officialSource,
+          showWhoPahoBadge: result.hasWhoPahoSource,
+        ),
         if (result.clinicalSources.isNotEmpty)
           _ClinicalSourcesCard(sources: result.clinicalSources),
         _SectionCard(
@@ -235,23 +240,29 @@ class _DoseResultCard extends StatelessWidget {
               : strings.t('doseAvailable'),
           helperText: strings.t('basedOnOfficialSource'),
           detailRows: [
-            if (result.frequency.isNotEmpty)
+            if (result.resolvedPosology.isNotEmpty)
+              _DoseDetailRow(
+                icon: Icons.library_books_rounded,
+                label: strings.t('posology'),
+                value: result.resolvedPosology,
+              ),
+            if (result.resolvedFrequency.isNotEmpty)
               _DoseDetailRow(
                 icon: Icons.schedule_rounded,
                 label: strings.t('frequency'),
-                value: result.frequency,
+                value: result.resolvedFrequency,
               ),
-            if (result.duration.isNotEmpty)
+            if (result.resolvedDuration.isNotEmpty)
               _DoseDetailRow(
                 icon: Icons.calendar_today_rounded,
                 label: strings.t('duration'),
-                value: result.duration,
+                value: result.resolvedDuration,
               ),
-            if (result.maxDailyDoseMg != null)
+            if (result.resolvedMaxDailyDoseMg != null)
               _DoseDetailRow(
                 icon: Icons.monitor_weight_outlined,
                 label: strings.t('maxDailyDose'),
-                value: '${result.maxDailyDoseMg!.toStringAsFixed(2)} mg',
+                value: '${result.resolvedMaxDailyDoseMg!.toStringAsFixed(2)} mg',
               ),
           ],
         ),
@@ -273,6 +284,12 @@ class _DoseResultCard extends StatelessWidget {
               helperText: strings.t('estimatedEducationalNotice'),
               detailRows: [
                 _DoseInlineBadge(label: strings.t('educationalEstimate')),
+                if (result.resolvedPosology.isNotEmpty)
+                  _DoseDetailRow(
+                    icon: Icons.library_books_rounded,
+                    label: strings.t('posology'),
+                    value: result.resolvedPosology,
+                  ),
                 if (result.estimatedFrequency.isNotEmpty)
                   _DoseDetailRow(
                     icon: Icons.schedule_rounded,
@@ -517,9 +534,13 @@ class _ConfidenceBadge extends StatelessWidget {
 }
 
 class _OfficialSourceCard extends StatelessWidget {
-  const _OfficialSourceCard({required this.source});
+  const _OfficialSourceCard({
+    required this.source,
+    required this.showWhoPahoBadge,
+  });
 
   final OfficialSource source;
+  final bool showWhoPahoBadge;
 
   Future<void> _openSource(String url) async {
     if (url.isEmpty) {
@@ -540,6 +561,10 @@ class _OfficialSourceCard extends StatelessWidget {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (showWhoPahoBadge) ...[
+                  _SourceBadge(label: strings.t('whoPahoSourceBadge')),
+                  const SizedBox(height: 12),
+                ],
                 if (source.authority.isNotEmpty)
                   _LabeledValue(
                     label: strings.t('authority'),
@@ -643,6 +668,59 @@ class _ClinicalSourcesCard extends StatelessWidget {
               ),
             )
             .toList(),
+      ),
+    );
+  }
+}
+
+class _FallbackMessageCard extends StatelessWidget {
+  const _FallbackMessageCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.current;
+
+    return _SectionCard(
+      title: strings.t('officialSource'),
+      icon: Icons.info_outline_rounded,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFF6FF),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFBFDBFE)),
+        ),
+        child: Text(
+          strings.t('fallbackSourceNotice', params: {'message': message}),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+        ),
+      ),
+    );
+  }
+}
+
+class _SourceBadge extends StatelessWidget {
+  const _SourceBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFDCFCE7),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF166534),
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }
