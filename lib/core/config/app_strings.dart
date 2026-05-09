@@ -115,6 +115,15 @@ class AppStrings {
       'ageHint': 'Ej.: 8 años',
       'weightKg': 'Peso (kg)',
       'weightHint': 'Ej.: 24.5',
+      'clinicalIndication': 'Indicación clínica',
+      'clinicalIndicationHint': 'Ej.: otitis media aguda',
+      'formulationSelectionTitle':
+          'Informa la presentación/concentración para calcular en mL',
+      'formulationSelectionMessage':
+          'Selecciona una de las presentaciones disponibles o informa otra concentración.',
+      'pharmaceuticalForm': 'Forma farmacéutica',
+      'formulationSelectionReason': 'Motivo de la selección',
+      'applyFormulationSelection': 'Calcular con esta presentación',
       'sex': 'Sexo',
       'countryOrPreferredSource': 'País o fuente preferida',
       'countryBrazil': 'Brasil',
@@ -178,10 +187,28 @@ class AppStrings {
       'mechanismSummary': 'Mecanismo resumido',
       'doseResult': 'Resultado de dosis',
       'officialDoseCalculated': 'Dosis oficial calculada',
+      'doseRangeAvailableTitle': 'Rango de dosis disponible',
+      'doseRangeAvailableMessage':
+          'Se encontró un rango oficial de dosis para revisión clínica.',
       'estimatedDoseByAi': 'Dosis estimada por IA',
-      'basedOnOfficialSource': 'Basado en la fuente oficial seleccionada.',
       'estimatedEducationalNotice':
-          'Esta es una estimación educativa basada en literatura clínica y debe ser validada por un profesional de salud.',
+          'Estimación educativa basada en la información clínica disponible.',
+      'doseInMlUnavailable':
+          'Para calcular en mL, informa la presentación/concentración de la suspensión.',
+      'doseInMlLabel': 'Volumen en mL',
+      'concentrationUsedLabel': 'Concentración utilizada',
+      'basedOnOfficialSource': 'Basado en la fuente oficial seleccionada.',
+      'customFormulationValue': 'Informar otra concentración',
+      'suspensionPresentation': 'Presentación de la suspensión',
+      'formulationStrengthMg': 'Cantidad de medicamento (mg)',
+      'formulationStrengthMgHint': 'Ej.: 250',
+      'formulationVolumeMl': 'Volumen de la presentación (mL)',
+      'formulationVolumeMlHint': 'Ej.: 5',
+      'selectFormulationOption': 'Selecciona una presentación para calcular.',
+      'invalidFormulationValue':
+          'Esta presentación no trae todos los datos numéricos necesarios. Informa la concentración manualmente.',
+      'pediatricPatientNotice':
+          'Paciente pediátrico. Las dosis deben ser validadas con un profesional de salud.',
       'posology': 'Posología',
       'frequency': 'Frecuencia',
       'duration': 'Duración',
@@ -210,6 +237,8 @@ class AppStrings {
       'aiClinicalSources': 'Fuentes clínicas usadas por la IA',
       'openSource': 'Abrir fuente',
       'educationalNotice': 'Aviso educativo',
+      'fixedEducationalWarning':
+          'Uso educativo y de apoyo clínico. No sustituye la evaluación de un profesional de salud.',
       'pillCapsule': 'Tableta / cápsula',
       'liquidDrops': 'Líquido / gotas',
       'topical': 'Tópico',
@@ -361,6 +390,15 @@ class AppStrings {
       'ageHint': 'Ex.: 8 anos',
       'weightKg': 'Peso (kg)',
       'weightHint': 'Ex.: 24.5',
+      'clinicalIndication': 'Indicação clínica',
+      'clinicalIndicationHint': 'Ex.: otite média aguda',
+      'formulationSelectionTitle':
+          'Informe a apresentação/concentração para calcular em mL',
+      'formulationSelectionMessage':
+          'Selecione uma das apresentações disponíveis ou informe outra concentração.',
+      'pharmaceuticalForm': 'Forma farmacêutica',
+      'formulationSelectionReason': 'Motivo da seleção',
+      'applyFormulationSelection': 'Calcular com esta apresentação',
       'sex': 'Sexo',
       'countryOrPreferredSource': 'País ou fonte preferida',
       'countryBrazil': 'Brasil',
@@ -424,10 +462,30 @@ class AppStrings {
       'mechanismSummary': 'Mecanismo resumido',
       'doseResult': 'Resultado da dose',
       'officialDoseCalculated': 'Dose oficial calculada',
+      'doseRangeAvailableTitle': 'Faixa de dose disponível',
+      'doseRangeAvailableMessage':
+          'Foi encontrada uma faixa oficial de dose para revisão clínica.',
       'estimatedDoseByAi': 'Dose estimada por IA',
-      'basedOnOfficialSource': 'Baseado na fonte oficial selecionada.',
       'estimatedEducationalNotice':
-          'Esta é uma estimativa educacional baseada em literatura clínica e deve ser validada por um profissional de saúde.',      'posology': 'Posología',
+          'Estimativa educativa baseada nas informações clínicas disponíveis.',
+      'doseInMlUnavailable':
+          'Para calcular em mL, informe a apresentação/concentração da suspensão.',
+      'doseInMlLabel': 'Volume em mL',
+      'concentrationUsedLabel': 'Concentração usada',
+      'basedOnOfficialSource': 'Baseado na fonte oficial selecionada.',
+      'customFormulationValue': 'Informar outra concentração',
+      'suspensionPresentation': 'Apresentação da suspensão',
+      'formulationStrengthMg': 'Quantidade do medicamento (mg)',
+      'formulationStrengthMgHint': 'Ex.: 250',
+      'formulationVolumeMl': 'Volume da apresentação (mL)',
+      'formulationVolumeMlHint': 'Ex.: 5',
+      'selectFormulationOption': 'Selecione uma apresentação para calcular.',
+      'invalidFormulationValue':
+          'Esta apresentação não trouxe todos os dados numéricos necessários. Informe a concentração manualmente.',
+      'pediatricPatientNotice':
+          'Paciente pediátrico. As doses devem ser validadas com um profissional de saúde.',
+      'posology': 'Posologia',
+      'frequency': 'Frequência',
       'duration': 'Duração',
       'maxDailyDose': 'Dose máxima diária',
       'estimatedFrequency': 'Frequência estimada',
@@ -454,6 +512,8 @@ class AppStrings {
       'aiClinicalSources': 'Fontes clínicas usadas pela IA',
       'openSource': 'Abrir fonte',
       'educationalNotice': 'Aviso educativo',
+      'fixedEducationalWarning':
+          'Uso educativo e de apoio clínico. Não substitui a avaliação de um profissional de saúde.',
       'pillCapsule': 'Comprimido / cápsula',
       'liquidDrops': 'Líquido / gotas',
       'topical': 'Tópico',

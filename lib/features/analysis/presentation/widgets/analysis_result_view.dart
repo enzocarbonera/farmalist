@@ -32,6 +32,8 @@ class AnalysisResultView extends StatelessWidget {
       children: [
         if (result.fallbackMessage.trim().isNotEmpty)
           _FallbackMessageCard(message: result.fallbackMessage.trim()),
+        if (result.isPediatricPatient)
+          _PediatricNoticeCard(category: result.patientCategory),
         _SectionCard(
           title: strings.t('analysisSummary'),
           icon: _iconForType(visualType),
@@ -147,7 +149,7 @@ class AnalysisResultView extends StatelessWidget {
           title: strings.t('educationalNotice'),
           icon: Icons.school_rounded,
           child: Text(
-            result.disclaimer,
+            '${strings.t('fixedEducationalWarning')}\n\n${result.disclaimer}',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
           ),
         ),
@@ -264,6 +266,70 @@ class _DoseResultCard extends StatelessWidget {
                 label: strings.t('maxDailyDose'),
                 value: '${result.resolvedMaxDailyDoseMg!.toStringAsFixed(2)} mg',
               ),
+            if (result.doseMlAvailable == true && result.doseMl != null)
+              _DoseDetailRow(
+                icon: Icons.science_rounded,
+                label: strings.t('doseInMlLabel'),
+                value: '${result.doseMl!.toStringAsFixed(2)} mL',
+              ),
+            if (result.doseMlAvailable == true &&
+                result.resolvedConcentrationMgPerMl != null)
+              _DoseDetailRow(
+                icon: Icons.opacity_rounded,
+                label: strings.t('concentrationUsedLabel'),
+                value: '${result.resolvedConcentrationMgPerMl!.toStringAsFixed(2)} mg/mL',
+              ),
+            if (result.doseMlAvailable == false)
+              _DoseInfoNote(message: strings.t('doseInMlUnavailable')),
+          ],
+        ),
+      );
+    }
+
+    if (result.hasDoseRange) {
+      return _SectionCard(
+        title: strings.t('doseResult'),
+        icon: Icons.rule_folder_outlined,
+        child: _DoseHero(
+          backgroundColor: const Color(0xFFFFF7ED),
+          accentColor: const Color(0xFF9A3412),
+          title: strings.t('doseRangeAvailableTitle'),
+          value: _doseRangeValue(strings),
+          helperText: strings.t('doseRangeAvailableMessage'),
+          detailRows: [
+            if (result.resolvedFrequency.isNotEmpty)
+              _DoseDetailRow(
+                icon: Icons.schedule_rounded,
+                label: strings.t('frequency'),
+                value: result.resolvedFrequency,
+              ),
+            if (result.resolvedDuration.isNotEmpty)
+              _DoseDetailRow(
+                icon: Icons.calendar_today_rounded,
+                label: strings.t('duration'),
+                value: result.resolvedDuration,
+              ),
+            if (result.resolvedMaxDailyDoseMg != null)
+              _DoseDetailRow(
+                icon: Icons.monitor_weight_outlined,
+                label: strings.t('maxDailyDose'),
+                value: '${result.resolvedMaxDailyDoseMg!.toStringAsFixed(2)} mg',
+              ),
+            if (result.doseMlAvailable == true && result.doseMl != null)
+              _DoseDetailRow(
+                icon: Icons.science_rounded,
+                label: strings.t('doseInMlLabel'),
+                value: '${result.doseMl!.toStringAsFixed(2)} mL',
+              ),
+            if (result.doseMlAvailable == true &&
+                result.resolvedConcentrationMgPerMl != null)
+              _DoseDetailRow(
+                icon: Icons.opacity_rounded,
+                label: strings.t('concentrationUsedLabel'),
+                value: '${result.resolvedConcentrationMgPerMl!.toStringAsFixed(2)} mg/mL',
+              ),
+            if (result.doseMlAvailable == false)
+              _DoseInfoNote(message: strings.t('doseInMlUnavailable')),
           ],
         ),
       );
@@ -302,6 +368,21 @@ class _DoseResultCard extends StatelessWidget {
                     label: strings.t('estimatedDuration'),
                     value: result.estimatedDuration,
                   ),
+                if (result.doseMlAvailable == true && result.doseMl != null)
+                  _DoseDetailRow(
+                    icon: Icons.science_rounded,
+                    label: strings.t('doseInMlLabel'),
+                    value: '${result.doseMl!.toStringAsFixed(2)} mL',
+                  ),
+                if (result.doseMlAvailable == true &&
+                    result.resolvedConcentrationMgPerMl != null)
+                  _DoseDetailRow(
+                    icon: Icons.opacity_rounded,
+                    label: strings.t('concentrationUsedLabel'),
+                    value: '${result.resolvedConcentrationMgPerMl!.toStringAsFixed(2)} mg/mL',
+                  ),
+                if (result.doseMlAvailable == false)
+                  _DoseInfoNote(message: strings.t('doseInMlUnavailable')),
               ],
             ),
             const SizedBox(height: 14),
@@ -355,6 +436,25 @@ class _DoseResultCard extends StatelessWidget {
     }
 
     return strings.t('estimateAvailable');
+  }
+
+  String _doseRangeValue(AppStrings strings) {
+    final min = result.doseRange.minMg;
+    final max = result.doseRange.maxMg;
+
+    if (min != null && max != null) {
+      return '${min.toStringAsFixed(2)} mg - ${max.toStringAsFixed(2)} mg';
+    }
+
+    if (min != null) {
+      return '${min.toStringAsFixed(2)} mg';
+    }
+
+    if (max != null) {
+      return '${max.toStringAsFixed(2)} mg';
+    }
+
+    return strings.t('doseAvailable');
   }
 }
 
@@ -695,6 +795,58 @@ class _FallbackMessageCard extends StatelessWidget {
         ),
         child: Text(
           strings.t('fallbackSourceNotice', params: {'message': message}),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+        ),
+      ),
+    );
+  }
+}
+
+class _DoseInfoNote extends StatelessWidget {
+  const _DoseInfoNote({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+      ),
+    );
+  }
+}
+
+class _PediatricNoticeCard extends StatelessWidget {
+  const _PediatricNoticeCard({required this.category});
+
+  final String category;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.current;
+    final suffix = category.trim().isEmpty ? '' : ' (${category.trim()})';
+
+    return _SectionCard(
+      title: strings.t('analysisSummary'),
+      icon: Icons.child_care_rounded,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFFDE68A)),
+        ),
+        child: Text(
+          '${strings.t('pediatricPatientNotice')}$suffix',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
         ),
       ),

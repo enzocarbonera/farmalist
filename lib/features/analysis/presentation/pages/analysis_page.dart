@@ -22,6 +22,7 @@ class AnalysisPage extends StatefulWidget {
 class _AnalysisPageState extends State<AnalysisPage> {
   final _formKey = GlobalKey<FormState>();
   final _medicationController = TextEditingController();
+  final _indicationController = TextEditingController();
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
   final _analysisService = AnalysisService();
@@ -37,6 +38,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
   void dispose() {
     _loadingTimer?.cancel();
     _medicationController.dispose();
+    _indicationController.dispose();
     _ageController.dispose();
     _weightController.dispose();
     super.dispose();
@@ -139,6 +141,9 @@ class _AnalysisPageState extends State<AnalysisPage> {
   Future<void> _submit({
     String? selectedSourceUrl,
     String? countryOverride,
+    double? formulationStrengthMgOverride,
+    double? formulationVolumeMlOverride,
+    double? concentrationMgPerMlOverride,
   }) async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -153,6 +158,10 @@ class _AnalysisPageState extends State<AnalysisPage> {
         weight: _weightController.text,
         sex: _selectedSex ?? '',
         country: countryOverride ?? _selectedCountry,
+        indication: _indicationController.text,
+        formulationStrengthMg: formulationStrengthMgOverride,
+        formulationVolumeMl: formulationVolumeMlOverride,
+        concentrationMgPerMl: concentrationMgPerMlOverride,
         selectedSourceUrl: selectedSourceUrl,
       );
 
@@ -268,6 +277,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
                                   children: [
                                     _medicationField(),
                                     const SizedBox(height: 16),
+                                    _indicationField(),
+                                    const SizedBox(height: 16),
                                     _ageField(),
                                     const SizedBox(height: 16),
                                     _weightField(),
@@ -285,6 +296,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   _medicationField(),
+                                  const SizedBox(height: 16),
+                                  _indicationField(),
                                   const SizedBox(height: 16),
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,6 +334,20 @@ class _AnalysisPageState extends State<AnalysisPage> {
                               countryOverride: option.country.isNotEmpty
                                   ? option.country
                                   : _selectedCountry,
+                            );
+                          },
+                          onSubmitFormulation: ({
+                            required double formulationStrengthMg,
+                            required double formulationVolumeMl,
+                            required double concentrationMgPerMl,
+                          }) {
+                            _submit(
+                              formulationStrengthMgOverride:
+                                  formulationStrengthMg,
+                              formulationVolumeMlOverride:
+                                  formulationVolumeMl,
+                              concentrationMgPerMlOverride:
+                                  concentrationMgPerMl,
                             );
                           },
                           onSelectSuggestion: (suggestion) {
@@ -466,6 +493,15 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
+  Widget _indicationField() {
+    final strings = context.strings;
+    return AppInput(
+      controller: _indicationController,
+      label: strings.t('clinicalIndication'),
+      hintText: strings.t('clinicalIndicationHint'),
+    );
+  }
+
   Widget _weightField() {
     final strings = context.strings;
     return AppInput(
@@ -541,8 +577,11 @@ class _DropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final matchingValues = items.where((item) => item.value == value).length;
+    final safeValue = matchingValues == 1 ? value : null;
+
     return DropdownButtonFormField<String>(
-      initialValue: value,
+      initialValue: safeValue,
       decoration: InputDecoration(labelText: label),
       items: items
           .map(
@@ -562,12 +601,18 @@ class _ResponseSection extends StatelessWidget {
   const _ResponseSection({
     required this.response,
     required this.onChooseSource,
+    required this.onSubmitFormulation,
     required this.onSelectSuggestion,
     required this.onRetrySource,
   });
 
   final MedicationAnalysisResponse response;
   final ValueChanged<AnalysisOption> onChooseSource;
+  final void Function({
+    required double formulationStrengthMg,
+    required double formulationVolumeMl,
+    required double concentrationMgPerMl,
+  }) onSubmitFormulation;
   final ValueChanged<String> onSelectSuggestion;
   final VoidCallback onRetrySource;
 
@@ -670,9 +715,19 @@ class _ResponseSection extends StatelessWidget {
     }
 
     if (response.isSuccess && response.result != null) {
-      return AnalysisResultView(
-        key: ValueKey('analysis-result-${context.localeService.language.name}'),
-        result: response.result!,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (response.result!.requiresFormulationSelection)
+            _FormulationSelectionCard(
+              result: response.result!,
+              onSubmit: onSubmitFormulation,
+            ),
+          AnalysisResultView(
+            key: ValueKey('analysis-result-${context.localeService.language.name}'),
+            result: response.result!,
+          ),
+        ],
       );
     }
 
@@ -762,6 +817,192 @@ class _SelectionCard extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _FormulationSelectionCard extends StatefulWidget {
+  const _FormulationSelectionCard({
+    required this.result,
+    required this.onSubmit,
+  });
+
+  final MedicationAnalysisResult result;
+  final void Function({
+    required double formulationStrengthMg,
+    required double formulationVolumeMl,
+    required double concentrationMgPerMl,
+  }) onSubmit;
+
+  @override
+  State<_FormulationSelectionCard> createState() =>
+      _FormulationSelectionCardState();
+}
+
+class _FormulationSelectionCardState extends State<_FormulationSelectionCard> {
+  final _customStrengthController = TextEditingController();
+  final _customVolumeController = TextEditingController();
+  String? _selectedValue;
+  FormulationOption? _selectedOption;
+  bool _showManualFields = false;
+
+  bool get _usesManualFields => _selectedValue == 'custom' || _showManualFields;
+
+  @override
+  void didUpdateWidget(covariant _FormulationSelectionCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!identical(oldWidget.result, widget.result)) {
+      _selectedValue = null;
+      _selectedOption = null;
+      _showManualFields = false;
+      _customStrengthController.clear();
+      _customVolumeController.clear();
+    }
+  }
+
+  @override
+  void dispose() {
+    _customStrengthController.dispose();
+    _customVolumeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = context.strings;
+    final items = [
+      ...widget.result.formulationOptions.asMap().entries.map(
+            (entry) => _SelectOption(
+              value: 'option_${entry.key}',
+              label: entry.value.label,
+            ),
+          ),
+      _SelectOption(
+        value: 'custom',
+        label: strings.t('customFormulationValue'),
+      ),
+    ];
+
+    return _SectionCard(
+      title: strings.t('formulationSelectionTitle'),
+      icon: Icons.opacity_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            strings.t('formulationSelectionMessage'),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+          ),
+          if (widget.result.pharmaceuticalForm.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _LabeledValue(
+              label: strings.t('pharmaceuticalForm'),
+              value: widget.result.pharmaceuticalForm.trim(),
+            ),
+          ],
+          if (widget.result.formulationSelectionReason.trim().isNotEmpty) ...[
+            const SizedBox(height: 4),
+            _LabeledValue(
+              label: strings.t('formulationSelectionReason'),
+              value: widget.result.formulationSelectionReason.trim(),
+            ),
+          ],
+          const SizedBox(height: 16),
+          _DropdownField(
+            label: strings.t('suspensionPresentation'),
+            value: _selectedValue,
+            items: items,
+            onChanged: _handleSelectionChanged,
+          ),
+          if (_usesManualFields) ...[
+            const SizedBox(height: 16),
+            AppInput(
+              controller: _customStrengthController,
+              label: strings.t('formulationStrengthMg'),
+              hintText: strings.t('formulationStrengthMgHint'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 16),
+            AppInput(
+              controller: _customVolumeController,
+              label: strings.t('formulationVolumeMl'),
+              hintText: strings.t('formulationVolumeMlHint'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+          ],
+          const SizedBox(height: 16),
+          AppButton(
+            label: strings.t('applyFormulationSelection'),
+            onPressed: _handleSubmit,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleSubmit() {
+    double? strengthMg;
+    double? volumeMl;
+    double? concentrationMgPerMl;
+
+    if (_selectedValue == null) {
+      _showFormulationMessage('selectFormulationOption');
+      return;
+    }
+
+    if (_usesManualFields) {
+      strengthMg = double.tryParse(
+        _customStrengthController.text.trim().replaceAll(',', '.'),
+      );
+      volumeMl = double.tryParse(
+        _customVolumeController.text.trim().replaceAll(',', '.'),
+      );
+      concentrationMgPerMl =
+          volumeMl != null && volumeMl > 0 && strengthMg != null
+              ? strengthMg / volumeMl
+              : null;
+    } else {
+      strengthMg = _selectedOption?.strengthMg;
+      volumeMl = _selectedOption?.volumeMl;
+      concentrationMgPerMl = _selectedOption?.concentrationMgPerMl;
+    }
+
+    if (strengthMg == null ||
+        volumeMl == null ||
+        volumeMl <= 0 ||
+        concentrationMgPerMl == null ||
+        concentrationMgPerMl <= 0) {
+      setState(() => _showManualFields = true);
+      _showFormulationMessage('invalidFormulationValue');
+      return;
+    }
+
+    widget.onSubmit(
+      formulationStrengthMg: strengthMg,
+      formulationVolumeMl: volumeMl,
+      concentrationMgPerMl: concentrationMgPerMl,
+    );
+  }
+
+  void _handleSelectionChanged(String? value) {
+    setState(() {
+      _selectedValue = value;
+      _showManualFields = false;
+      _selectedOption = null;
+
+      final index = int.tryParse(value?.replaceFirst('option_', '') ?? '');
+      if (index != null &&
+          index >= 0 &&
+          index < widget.result.formulationOptions.length) {
+        _selectedOption = widget.result.formulationOptions[index];
+      }
+    });
+  }
+
+  void _showFormulationMessage(String key) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.strings.t(key))),
     );
   }
 }

@@ -23,6 +23,10 @@ class AnalysisService {
     required String weight,
     required String sex,
     String? country,
+    String? indication,
+    double? formulationStrengthMg,
+    double? formulationVolumeMl,
+    double? concentrationMgPerMl,
     String? selectedSourceUrl,
   }) async {
     final session = _authService.getCurrentSession();
@@ -32,6 +36,38 @@ class AnalysisService {
       throw Exception(AppStrings.current.t('sessionExpired'));
     }
 
+    final requestBody = <String, dynamic>{
+      'medication': medication.trim(),
+      'age': age.trim(),
+      'weight': weight.trim(),
+      'sex': sex.trim(),
+      'language': currentLanguageCode,
+    };
+
+    if (country != null && country.trim().isNotEmpty) {
+      requestBody['country'] = country.trim();
+    }
+
+    if (indication != null && indication.trim().isNotEmpty) {
+      requestBody['indication'] = indication.trim();
+    }
+
+    if (formulationStrengthMg != null) {
+      requestBody['formulation_strength_mg'] = formulationStrengthMg;
+    }
+
+    if (formulationVolumeMl != null) {
+      requestBody['formulation_volume_ml'] = formulationVolumeMl;
+    }
+
+    if (concentrationMgPerMl != null) {
+      requestBody['concentration_mg_per_ml'] = concentrationMgPerMl;
+    }
+
+    if (selectedSourceUrl != null && selectedSourceUrl.trim().isNotEmpty) {
+      requestBody['selected_source_url'] = selectedSourceUrl.trim();
+    }
+
     final response = await _httpClient.post(
       Uri.parse('${AppConfig.apiUrl}/analyze-medication'),
       headers: {
@@ -39,16 +75,7 @@ class AnalysisService {
         'apikey': AppConfig.supabaseAnonKey,
         'Authorization': 'Bearer ${session.accessToken}',
       },
-      body: jsonEncode({
-        'medication': medication.trim(),
-        'age': age.trim(),
-        'weight': weight.trim(),
-        'sex': sex.trim(),
-        'language': currentLanguageCode,
-        if (country != null && country.trim().isNotEmpty) 'country': country.trim(),
-        if (selectedSourceUrl != null && selectedSourceUrl.trim().isNotEmpty)
-          'selected_source_url': selectedSourceUrl.trim(),
-      }),
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -223,6 +250,11 @@ class MedicationAnalysisResult {
     required this.commonSymptomsOrSituations,
     required this.doseCalculated,
     required this.doseMg,
+    required this.doseMlAvailable,
+    required this.doseMl,
+    required this.resultFormulationStrengthMg,
+    required this.resultFormulationVolumeMl,
+    required this.resultConcentrationMgPerMl,
     required this.frequency,
     required this.duration,
     required this.maxDailyDoseMg,
@@ -232,6 +264,15 @@ class MedicationAnalysisResult {
     required this.estimatedFrequency,
     required this.estimatedDuration,
     required this.estimatedDetails,
+    required this.isPediatricPatient,
+    required this.patientCategory,
+    required this.doseRangeAvailable,
+    required this.doseRange,
+    required this.requiresFormulationSelection,
+    required this.formulationOptions,
+    required this.pharmaceuticalForm,
+    required this.formulationSelectionReason,
+    required this.doseRangeMl,
     required this.calculationSteps,
     required this.alerts,
     required this.explanation,
@@ -251,6 +292,11 @@ class MedicationAnalysisResult {
   final List<String> commonSymptomsOrSituations;
   final bool doseCalculated;
   final double? doseMg;
+  final bool? doseMlAvailable;
+  final double? doseMl;
+  final double? resultFormulationStrengthMg;
+  final double? resultFormulationVolumeMl;
+  final double? resultConcentrationMgPerMl;
   final String frequency;
   final String duration;
   final double? maxDailyDoseMg;
@@ -260,6 +306,15 @@ class MedicationAnalysisResult {
   final String estimatedFrequency;
   final String estimatedDuration;
   final EstimatedDetails estimatedDetails;
+  final bool isPediatricPatient;
+  final String patientCategory;
+  final bool doseRangeAvailable;
+  final DoseRange doseRange;
+  final bool requiresFormulationSelection;
+  final List<FormulationOption> formulationOptions;
+  final String pharmaceuticalForm;
+  final String formulationSelectionReason;
+  final DoseRange doseRangeMl;
   final List<String> calculationSteps;
   final List<String> alerts;
   final String explanation;
@@ -285,9 +340,18 @@ class MedicationAnalysisResult {
       duration.isNotEmpty ? duration : clinicalStructure.duration;
 
   double? get resolvedMaxDailyDoseMg => maxDailyDoseMg ?? clinicalStructure.maxDailyDoseMg;
+  double? get resolvedConcentrationMgPerMl => resultConcentrationMgPerMl;
 
   List<String> get resolvedAlerts =>
       alerts.isNotEmpty ? _mergeStringLists(alerts, clinicalStructure.warnings) : clinicalStructure.warnings;
+
+  bool get hasDoseRange =>
+      !doseCalculated &&
+      doseRangeAvailable &&
+      (doseRange.minMg != null || doseRange.maxMg != null);
+
+  bool get hasDoseRangeMl =>
+      doseRangeMl.minMg != null || doseRangeMl.maxMg != null;
 
   factory MedicationAnalysisResult.fromJson(Map<String, dynamic> json) {
     final officialSource = OfficialSource.fromDynamic(
@@ -295,6 +359,8 @@ class MedicationAnalysisResult {
     );
     final estimatedDetails = EstimatedDetails.fromDynamic(json['estimated_details']);
     final clinicalStructure = ClinicalStructure.fromDynamic(json['clinical_structure']);
+    final doseRange = DoseRange.fromDynamic(json['dose_range_mg']);
+    final doseRangeMl = DoseRange.fromDynamic(json['dose_range_ml']);
 
     return MedicationAnalysisResult(
       medication: (json['medication'] ??
@@ -311,6 +377,21 @@ class MedicationAnalysisResult {
       ),
       doseCalculated: json['dose_calculated'] == true,
       doseMg: _parseDouble(json['dose_mg']),
+      doseMlAvailable: json.containsKey('dose_ml_available')
+          ? json['dose_ml_available'] == true
+          : null,
+      doseMl: _parseDouble(
+        json['dose_ml'] ?? json['dose_volume_ml'] ?? json['volume_ml'],
+      ),
+      resultFormulationStrengthMg: _parseDouble(
+        json['formulation_strength_mg'],
+      ),
+      resultFormulationVolumeMl: _parseDouble(
+        json['formulation_volume_ml'],
+      ),
+      resultConcentrationMgPerMl: _parseDouble(
+        json['concentration_mg_per_ml'],
+      ),
       frequency: (json['frequency'] ?? clinicalStructure.frequency).toString(),
       duration: (json['duration'] ?? clinicalStructure.duration).toString(),
       maxDailyDoseMg: _parseDouble(
@@ -322,6 +403,19 @@ class MedicationAnalysisResult {
       estimatedFrequency: (json['estimated_frequency'] ?? '').toString(),
       estimatedDuration: (json['estimated_duration'] ?? '').toString(),
       estimatedDetails: estimatedDetails,
+      isPediatricPatient: json['is_pediatric_patient'] == true,
+      patientCategory: (json['patient_category'] ?? '').toString(),
+      doseRangeAvailable: json['dose_range_available'] == true,
+      doseRange: doseRange,
+      requiresFormulationSelection:
+          json['requires_formulation_selection'] == true,
+      formulationOptions: FormulationOption.fromDynamicList(
+        json['formulation_options'],
+      ),
+      pharmaceuticalForm: (json['pharmaceutical_form'] ?? '').toString(),
+      formulationSelectionReason:
+          (json['formulation_selection_reason'] ?? '').toString(),
+      doseRangeMl: doseRangeMl,
       calculationSteps: _parseStringList(
         json['calculation_steps'] ?? json['steps'] ?? json['step_by_step'],
       ),
@@ -393,6 +487,143 @@ class MedicationAnalysisResult {
     }
 
     return values;
+  }
+}
+
+class DoseRange {
+  const DoseRange({
+    required this.minMg,
+    required this.maxMg,
+  });
+
+  final double? minMg;
+  final double? maxMg;
+
+  factory DoseRange.fromDynamic(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return DoseRange(
+        minMg: _parseDouble(value['min_mg']),
+        maxMg: _parseDouble(value['max_mg']),
+      );
+    }
+
+    return const DoseRange(
+      minMg: null,
+      maxMg: null,
+    );
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    if (value is String) {
+      return double.tryParse(value.replaceAll(',', '.'));
+    }
+
+    return null;
+  }
+}
+
+class FormulationOption {
+  const FormulationOption({
+    required this.label,
+    required this.strengthMg,
+    required this.volumeMl,
+    required this.concentrationMgPerMl,
+    required this.type,
+  });
+
+  final String label;
+  final double? strengthMg;
+  final double? volumeMl;
+  final double? concentrationMgPerMl;
+  final String type;
+
+  bool get isValid =>
+      strengthMg != null &&
+      volumeMl != null &&
+      volumeMl! > 0 &&
+      concentrationMgPerMl != null &&
+      concentrationMgPerMl! > 0;
+
+  static List<FormulationOption> fromDynamicList(dynamic value) {
+    if (value is! List) {
+      return const [];
+    }
+
+    return value
+        .map((item) => FormulationOption.fromDynamic(item))
+        .whereType<FormulationOption>()
+        .toList();
+  }
+
+  static FormulationOption? fromDynamic(dynamic value) {
+    if (value is String) {
+      return FormulationOption(
+        label: value,
+        strengthMg: null,
+        volumeMl: null,
+        concentrationMgPerMl: null,
+        type: '',
+      );
+    }
+
+    if (value is Map<String, dynamic>) {
+      final label = (value['label'] ??
+              value['name'] ??
+              value['title'] ??
+              value['display'] ??
+              '')
+          .toString();
+      final strengthMg = _parseDouble(
+        value['strength_mg'] ?? value['formulation_strength_mg'],
+      );
+      final volumeMl = _parseDouble(
+        value['volume_ml'] ?? value['formulation_volume_ml'],
+      );
+      final concentrationMgPerMl = _parseDouble(
+        value['concentration_mg_per_ml'],
+      );
+      final type = (value['type'] ?? '').toString();
+      if (label.isNotEmpty || strengthMg != null || volumeMl != null) {
+        return FormulationOption(
+          label: label.isNotEmpty ? label : _formatLabel(strengthMg, volumeMl),
+          strengthMg: strengthMg,
+          volumeMl: volumeMl,
+          concentrationMgPerMl: concentrationMgPerMl,
+          type: type,
+        );
+      }
+    }
+
+    return null;
+  }
+
+  static String _formatLabel(double? strengthMg, double? volumeMl) {
+    final strength = strengthMg?.toStringAsFixed(
+      strengthMg.truncateToDouble() == strengthMg ? 0 : 2,
+    );
+    final volume = volumeMl?.toStringAsFixed(
+      volumeMl.truncateToDouble() == volumeMl ? 0 : 2,
+    );
+    if (strength == null || volume == null) {
+      return '';
+    }
+    return '$strength mg / $volume mL';
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    if (value is String) {
+      return double.tryParse(value.replaceAll(',', '.'));
+    }
+
+    return null;
   }
 }
 

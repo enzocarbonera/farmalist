@@ -44376,6 +44376,7 @@ A.xl.prototype={
 J(a){var s,r,q,p,o=null,n=new A.aQ($.bS().a),m=this.c,l=A.aLA(m),k=t.p,j=A.b([],k),i=B.c.bR(m.fx)
 if(i.length!==0)j.push(new A.T3(i,o))
 j.push(new A.fw(n.C("analysisSummary"),A.aBl(l),A.dS(A.b([new A.Ys(l,o),B.iE,A.dM(A.c_(A.b([new A.Yr(l,o),B.cz,A.ah(m.a,o,o,o,o,A.M(a).ok.r,o,o)],k),B.B,B.q,B.v),1)],k),B.B,B.q,B.v),o))
+j.push(new A.SC(m,o))
 i=m.b
 s=i.length===0
 if(!s||m.d.length!==0||m.f.length!==0||m.e.length!==0||m.c.length!==0){r=n.C("useAndIndications")
@@ -44391,8 +44392,7 @@ if(i.length!==0)B.b.N(q,A.b([new A.rg(n.C("commonUses"),o),new A.qN(i,"",o),B.a3
 i=m.c
 if(i.length!==0){s=n.C("mechanismSummary")
 p=A.M(a).ok.y
-B.b.N(q,A.b([new A.rg(s,o),A.ah(i,o,o,o,o,p==null?o:p.fs(1.6),o,o)],k))}j.push(new A.fw(r,B.Hf,A.c_(q,B.B,B.q,B.v),o))}j.push(new A.SC(m,o))
-j.push(new A.fw(n.C("stepByStepCalculation"),B.Hc,new A.qN(m.CW,n.C("calculationNotReceived"),o),o))
+B.b.N(q,A.b([new A.rg(s,o),A.ah(i,o,o,o,o,p==null?o:p.fs(1.6),o,o)],k))}j.push(new A.fw(r,B.Hf,A.c_(q,B.B,B.q,B.v),o))}j.push(new A.fw(n.C("stepByStepCalculation"),B.Hc,new A.qN(m.CW,n.C("calculationNotReceived"),o),o))
 k=n.C("explanation")
 i=A.M(a).ok.y
 i=i==null?o:i.fs(1.7)
